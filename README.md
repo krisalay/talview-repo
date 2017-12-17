@@ -7,6 +7,7 @@ PRIMARY STEP:  Add the aws credentials in .env file of the root folder.
 STEP 1
 ===
 Create folders "uploads" and "thumbnails" in the root directory.
+
 STEP 2
 ===
 Upload any .mp4 file using the below api, and the screen shots will be saved in the folder: thumbnails/.
