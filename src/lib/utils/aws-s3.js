@@ -5,11 +5,10 @@ var express = require('express');
 var app = express();
 var Q = require('q');
 
-var config = require('../config');
-app.set('accessKeyId', config.ACCESS_KEY_ID);
-app.set('secretAccessKey', config.SECRET_ACCESS_KEY);
-app.set('region', config.AWS_REGION);
-app.set('bucket', config.BUCKET);
+app.set('accessKeyId', process.env.ACCESS_KEY_ID);
+app.set('secretAccessKey', process.env.SECRET_ACCESS_KEY);
+app.set('region', process.env.AWS_REGION);
+app.set('bucket', process.env.BUCKET);
 
 var s3 = new AWS.S3();
 
@@ -29,7 +28,7 @@ function getContentTypeByFile(fileName) {
   else if (fn.indexOf('.js') >= 0) rc = 'application/x-javascript';
   else if (fn.indexOf('.png') >= 0) rc = 'image/png';
   else if (fn.indexOf('.jpg') >= 0) rc = 'image/jpg';
-
+  else if (fn.indexOf('.mp4') >= 0) rc= 'video/mp4';
   return rc;
 }
 
@@ -68,32 +67,29 @@ module.exports = {
         }).send();
         return deferred.promise;
     },
-    upload_single_file : function(path_to_file, bucket_folder_structure, key, remote_file_name){
-      var fileBuffer = fs.readFileSync(path_to_file+key);
+    upload_single_file : function(path_to_file,key){
+      var fileBuffer = fs.readFileSync(`${path_to_file}/${key}`);
       var metaData = getContentTypeByFile(key);
-
-      remote_file_name += path.extname(key);
 
       s3.putObject({
         Bucket: app.get('bucket'),
-        Key: bucket_folder_structure+remote_file_name,
+        Key: key,
         Body: fileBuffer,
         ContentType: metaData
       }, function(error, response) {
-        console.log('uploaded file[' + remote_file_name + '] to [' + bucket_folder_structure + '] as [' + metaData + ']');
+        if(error) {
+          console.log(`Error uploading file ${key} to s3`);
+        } else {
+          console.log('uploaded file ' + key);
+        }
       });
     },
 
-    upload_multiple_file : function(folderPath,bucket_folder_structure,filename){
-      var fileList = getFileList('./'+folderPath+'/');
+    upload_multiple_file : function(folderPath,bucket_folder_structure){
+      var fileList = getFileList(path.join(__dirname, '../../../thumbnails/'));
       fileList.forEach(function(entry){
-        var ids = filename.split('_');
-        var reg = new RegExp("^"+ids[0]+'_'+ids[1]);
-        if(reg.test(entry)){
-          module.exports.upload_single_file(folderPath,bucket_folder_structure,entry, filename);
-        }else{
-            console.log('file not found');
-        }
+        console.log(entry);
+        module.exports.upload_single_file(folderPath, entry, );
       });
     }
 };
