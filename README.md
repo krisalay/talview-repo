@@ -2,6 +2,10 @@ Simple Documentation
 ===================
 This micro-service is just a prototype. Some of the validations are not considered like if by mistake user uploads a png/jpg file then, it may throw error. This validations are not handled due to the time constraints.
 
+PREREQUISITE
+===
+install ffmpeg globally in your system.
+
 PRIMARY STEP
 ===
 Add the aws credentials in .env file of the root folder.
